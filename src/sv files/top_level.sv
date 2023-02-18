@@ -12,11 +12,9 @@ module top_level(
 			  rslt,               // alu output
               immed;
   logic sc_in,   				  // shift/carry out from/to ALU
-   		pariQ,              	  // registered parity flag from ALU
-		zeroQ;                    // registered zero flag from ALU 
+   		zeroQ;                    // registered zero flag from ALU 
   wire  relj;                     // from control to PC; relative jump enable
-  wire  pari,
-        zero,
+  wire  zero,
 		sc_clr,
 		sc_en,
         MemWrite,
@@ -28,8 +26,8 @@ module top_level(
   PC #(.D(D)) 					  // D sets program counter width
      pc1 (.reset            ,
          .clk              ,
-		 .reljump_en (relj),
-		 .absjump_en (absj),
+		 .branch_en (relj),
+		 .jump_en (absj),
 		 .target           ,
 		 .prog_ctr          );
 
@@ -52,6 +50,7 @@ module top_level(
   .MemtoReg(),
   .ALUOp());
 
+
   assign rd_addrA = mach_code[2:0];
   assign rd_addrB = mach_code[5:3];
   assign alu_cmd  = mach_code[8:6];
@@ -70,10 +69,8 @@ module top_level(
   alu alu1(.alu_cmd(),
          .inA    (datA),
 		 .inB    (muxB),
-		 .sc_i   (sc),   // output from sc register
 		 .rslt       ,
-		 .sc_o   (sc_o), // input to sc register
-		 .pari  );  
+		 .sc_o   (sc_o), // input to sc registered );  
 
   dat_mem dm1(.dat_in(datB)  ,  // from reg_file
              .clk           ,
@@ -83,12 +80,11 @@ module top_level(
 
 // registered flags from ALU
   always_ff @(posedge clk) begin
-    pariQ <= pari;
 	zeroQ <= zero;
     if(sc_clr)
-	  sc_in <= 'b0;
+	  //sc_in <= 'b0;
     else if(sc_en)
-      sc_in <= sc_o;
+      //sc_in <= sc_o;
   end
 
   assign done = prog_ctr == 128;
