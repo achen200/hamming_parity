@@ -1,3 +1,4 @@
+/* 	To add support for labels in the future
 module PC_LUT #(parameter D=12)(
   input       [ 1:0] addr,	   // target 4 values
   output logic[D-1:0] target);
@@ -10,6 +11,7 @@ module PC_LUT #(parameter D=12)(
   endcase
 
 endmodule
+*/
 
 /*
 

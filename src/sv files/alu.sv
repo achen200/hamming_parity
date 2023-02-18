@@ -34,6 +34,8 @@ always_comb begin
 	    {sc_o,rslt} = inA - inB;
 	  kNOT: // not
 	    rslt = ~inA;
+    kPASS: //Pass (one variable to another)
+      inA = inB;
     default:
       
   endcase
