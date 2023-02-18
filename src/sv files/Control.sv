@@ -10,10 +10,12 @@ always_comb begin
   RegDst 	=   'b0;   // 1: not in place  just leave 0
   Branch 	=   'b0;   // 1: branch (jump)
   MemWrite  =	'b0;   // 1: store to memory
-  ALUSrc 	=	'b0;   // 1: immediate  0: second reg file output
+  ALUSrc 	=	  'b0;   // 1: immediate  0: second reg file output
   RegWrite  =	'b1;   // 0: for store or no op  1: most other operations 
   MemtoReg  =	'b0;   // 1: load -- route memory instead of ALU to reg_file data in
-  ALUOp	    =   'b111; // y = a+0;
+  ALUOp	    = 'b111; // y = a+0;
+  Reg_Rize =  'b //TODO
+  Func_Ex  =  'b //TODO
 // sample values only -- use what you need
 case(instr)    // override defaults with exceptions
   'b0000:  begin					// store operation

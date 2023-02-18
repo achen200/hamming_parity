@@ -1,6 +1,6 @@
 // cache memory/register file
-// default address pointer width = 4, for 16 registers
-module reg_file #(parameter pw=4)(
+// default address pointer width = 3, for 8 registers
+module reg_file #(parameter pw=3)(
   input[7:0] dat_in,
   input      clk,
   input      wr_en,           // write enable
@@ -10,7 +10,7 @@ module reg_file #(parameter pw=4)(
   output logic[7:0] datA_out, // read data
                     datB_out);
 
-  logic[7:0] core[2**pw];    // 2-dim array  8 wide  16 deep
+  logic[7:0] core[2**pw];    // 2-dim array  8 wide  8 deep
 
 // reads are combinational
   assign datA_out = core[rd_addrA];
