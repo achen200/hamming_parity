@@ -3,7 +3,7 @@ import definitions::*;
 module Control #(parameter opwidth = 3, mcodebits = 8)(
   input [mcodebits:0] instr,    // subset of machine code (any width you need)
 
-  output logic Branch, MemRead, MemWrite, ALUOp, Reg_Size, Func_Ex, Jump, ALUSrc, RegWrite;
+  output logic Branch, MemRead, MemWrite, Reg_Size, Func_Ex, Jump, ALUSrc, RegWrite;
   output logic[opwidth:0] ALUOp);	   // for up to 16 ALU operations
 
   logic opcode = instr[8:5];
@@ -14,7 +14,7 @@ always_comb begin
   Branch 	 =  'b0;   // 1: Set to 1 only if EQ is true
   MemRead  =	'b0;   // 1: load -- route memory instead of ALU to reg_file data in
   MemWrite =	'b0;   // 1: store to memory
-  ALUOp	   =  'b111; // y = a+0;
+  ALUOp	   =  'b1000; // default: pass
   Reg_Size =  'b1;   // 0: For H type instructions, 1 for C type and M type
   Func_Ex  =  'b0;   // 0: For H type and C type, 1 for M type
   Jump     =  'b0;   //
