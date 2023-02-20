@@ -65,7 +65,7 @@ module top_level(
   assign muxB = Reg_Size ? mach_code[2:0] : {mach_code[3:2], 1'b1};
   assign muxC = MemWrite? 'b001:muxB;
   assign muxD = MemRead ? 'b001:muxA;
-  assign muxE = Reg_Size? mach_code[2:0]: {'b0, mach_code[3:2]};
+  assign muxE = Reg_Size? mach_code[2:0]: {1'b0, mach_code[3:2]};
   assign muxF = Func_Ex ? muxE : {2'b00,mach_code[2]};
   //G: ALU stage,
   assign muxG = ALUSrc ? datB : {muxF};
