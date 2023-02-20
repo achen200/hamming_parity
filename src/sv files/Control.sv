@@ -2,13 +2,12 @@ import definitions::*;
 // control decoder
 module Control #(parameter opwidth = 3, mcodebits = 8)(
   input [mcodebits:0] instr,    // subset of machine code (any width you need)
+  output logic Branch, MemRead, MemWrite, Reg_Size, Func_Ex, Jump, ALUSrc, RegWrite,
+  output logic[opwidth:0] ALUOp,	   // for up to 16 ALU operations
 
-  output logic Branch, MemRead, MemWrite, Reg_Size, Func_Ex, Jump, ALUSrc, RegWrite;
-  output logic[opwidth:0] ALUOp);	   // for up to 16 ALU operations
-
-  logic opcode = instr[8:5];
-  logic funct  = instr[1:0];
-
+  logic opcode = instr[8:5],
+  logic funct  = instr[1:0]
+);
 always_comb begin
 // defaults
   Branch 	 =  'b0;   // 1: Set to 1 only if EQ is true
