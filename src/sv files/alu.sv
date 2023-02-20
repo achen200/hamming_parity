@@ -14,31 +14,21 @@ always_comb begin
   sc_o = 'b0;  //shift carry out
   zero = !rslt; //if zero
   case(alu_cmd)
-    kADD: // add 2 8-bit unsigned; automatically makes carry-out
-      {sc_o,rslt} = inA + inB + sc_i;
-	  kSHIFT: //SHIFT
-      if (inB < 0)  begin //left shift by 2s comp immediate if immediate (inB) is negative
-        {sc_o, rslt} = inA << -inB
-      end  
-      else begin //right shift by 2s comp immediate if immediate (inB) is nonnegative
-        // right shift (1 added to number passed in to avoid wasting the 0)    
-        {rslt,sc_o} = inA >> (inB+1);
-      end 
-    kBXOR: // bitwise XOR
-	    rslt = inA ^ inB;
-	  kAND: // bitwise AND (mask)
-	    rslt = inA & inB;
-  	bRXOR: // reduction XOR
-	    rslt = ^inA;
-	  kSUB: // subtract
-	    {sc_o,rslt} = inA - inB;
-	  kNOT: // not
-	    rslt = ~inA;
-    kPASS: //Pass (one variable to another)
-      inA = inB;
-    default:
+    kADD: {sc_o,rslt} = inA + inB; //+ sc_i;  add 2 8-bit unsigned; automatically makes carry-out
+	kSHIFT: begin//SHIFT
+      if (inB < 0)   //left shift by 2s comp immediate if immediate (inB) is negative
+        {sc_o, rslt} = inA << -inB;  
+      else //right shift by 2s comp immediate if immediate (inB) is nonnegative
+        {rslt,sc_o} = inA >> (inB+1);// right shift (1 added to number passed in to avoid wasting the 0)    
+	end
+    kBXOR: rslt = inA ^ inB;// bitwise XOR
+	kAND: rslt = inA & inB;// bitwise AND (mask)
+  	kRXOR: rslt = ^inA; // reduction XOR
+	kSUB: {sc_o,rslt} = inA - inB;// subtract   
+	kNOT: rslt = ~inA;// not
+    kPASS: rslt = inB; //Pass (one variable to another)
       
-  endcase
+    endcase
 end
    
 endmodule
