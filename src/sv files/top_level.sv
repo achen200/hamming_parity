@@ -9,15 +9,15 @@ module top_level(
               prevAddr;
   wire[7:0] datA,datB,		  // from RegFile
             muxB, 
-			      rslt,               // alu output
+			rslt,               // alu output
             immed,
             mem_out;            // from data memory
   logic sc_in,   				  // shift/carry out from/to ALU
-   		  zeroQ;                    // registered zero flag from ALU 
+   		zeroQ;                    // registered zero flag from ALU 
   wire  Branch, Jump;                     // from control to PC; relative jump enable
   wire  zero,
-		    sc_clr,
-		    sc_en,
+		sc_clr,
+		sc_en,
         MemWrite,
         MemRead,
         ALUSrc,
@@ -31,11 +31,11 @@ module top_level(
   PC #(.D(D)) 					          // D sets program counter width
      pc1 (.reset            ,
           .clk              ,
-		      .branch_en (branch),
-		      .jump_en (jump),
+		      .branch_en (Branch),
+		      .jump_en (Jump),
 		      .target  (datB),
-		      .prog_ctr,
-          .branch_calc);
+		      .prog_ctr
+			);
 
 // lookup table to facilitate jumps/branches
 /*
@@ -61,8 +61,8 @@ module top_level(
   .RegWrite);
 
   //A-F: ID stage
-  assign muxA = Reg_Size ? mach_code[5:3] : {mach_code[5:4],1'b0}
-  assign muxB = Reg_Size ? mach_code[2:0] : {mach_code[3:2], 1'b1}
+  assign muxA = Reg_Size ? mach_code[5:3] : {mach_code[5:4],1'b0};
+  assign muxB = Reg_Size ? mach_code[2:0] : {mach_code[3:2], 1'b1};
   assign muxC = MemWrite? 'b001:muxB;
   assign muxD = MemRead ? 'b001:muxA;
   assign muxE = Reg_Size? mach_code[2:0]: {'b0, mach_code[3:2]};
@@ -91,10 +91,10 @@ module top_level(
   alu alu1(
     .alu_cmd(alu_cmd),
     .inA    (datA),
-		.inB    (muxB),
-		.rslt,
-		.sc_o   (sc_o), // input to sc registered 
-    );  
+	.inB    (muxB),
+	.rslt,
+	.sc_o() 	 // input to sc registered 
+);  
 
   dat_mem dm1(.dat_in(datB)  ,  // from reg_file
               .clk           ,
