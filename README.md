@@ -4,4 +4,4 @@
  - top_level.sv - contains top level
  - definitions.sv - contains lookup table for ALUops
  - Rest of the file names match module functions
-- Machine code, assembler, and warning messages located in src folder
+- Machine code, assembly code, assembler, and warning messages located in src folder
