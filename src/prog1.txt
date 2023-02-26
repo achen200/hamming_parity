@@ -1,0 +1,194 @@
+AND $3 $0     //i = 0
+AND $4 $0	  //j = 0
+
+// Initialize upper_bits, lower_bits, i, j //
+LOAD $4 #1    //$1 = data_mem[j+1] 
+MOV $6 $1    //$6 = $1               or $6 = upper_bits
+MOV $7 $1    //temp_u = upper_bits
+
+
+LOAD $4 #0    //$1 = data_mem[j] 
+MOV   $2 $1    //temp_l = lower_bits
+
+
+//Calculate p8 and MSW at mem[j + 31] //
+LSH   $7 #4    //temp_u << 4  We want << 5 but shifts limited to 4 bits
+LSH   $7 #1    //temp_u << 1
+RSH   $2 #4    //temp_l >> 4
+LSH   $2 #1    //temp_l << 1
+ADD   $2 $7    //$8 = temp_u + temp_l  or to_store = temp_u + temp_l
+RXOR  $7 $2    //$7 = p8
+ADD   $2 $7    //to_store += p8 
+MOV   $7 $2    //$7 = $2
+
+//Calculate j + 31//
+AND   $2 $0    //$2 = 0                or x = 0
+ADDI  $2 #4    //$2 += 4               or x = 4   
+LSH   $2 #4    //$2 /= 4               or x = 32
+SUBI  $2 #1    //$2 -= 1               or x = 31
+MOV   $5 $4    //$5 = j
+ADD   $2 $5    //$2 = j + 31
+MOV   $5 $1    //$5 = temp_l           make reg5 hold lower_bits
+			
+//Store MSW into mem[j+31]//
+MOV   $7 $1    //$1 = MSW
+STORE $2 #0    //mem[j+31] = to_store 
+
+//Isolate p8//
+LSH   $7 #4		//    
+LSH   $7 #3		//$7 = (p8)000_0000
+RSH   $7 #4    	//
+RSH   $7 #2		//$7 = 0000_00(p8)0
+
+//Calculate p4//
+LSH   $6 #1      //upper_bits << 1
+RSH   $5 #4      
+RSH   $5 #3      //$5 = b8
+ADD   $6 $5      //$6 = 0000_b11:b8
+LOAD  $4 #0      //$1 = lower_bits
+MOV   $1 $5      //$5 = lower_bits
+RSH   $5 #1      //$5 = 0_b8:b2
+LSH   $5 #4    
+LSH   $5 #1      //$5 = (b4:b2)0_0000
+ADD   $6 $5      //$6 = (b4:b2)0_b11:b8
+RXOR  $6 $6      //$6 = p4
+
+//Move p4 into reg7//
+ADD   $6 $7     //$6 = 0000_00p8p4
+MOV   $7 $6     //$7 = 0000_00p8p4
+
+//Calculate p2//
+LOAD  $4 #1     //$1 = upper_bits
+RSH   $1 #1     //$1 = 0000_00_b11_b10 
+RXOR  $5 $1     //Store reduction XOR of b11,b10 into $5
+LOAD  $4 #1     //$1 = lower_bits
+//Create bitmask for p2 (0110_1101)
+AND   $6 $0     //$6 = 0000_0000
+ADDI  $6 #3     //$6 = 0000_0011
+LSH   $6 #3     //$6 = 0001_1000
+ADDI  $6 #3     //$6 = 0001_1011
+LSH   $6 #2     //$6 = 0110_1100
+ADDI  $6 #1     //$6 = 0110_1101
+AND   $6 $1     //$6 = x (bitmask applied to lower_bits) 
+RXOR  $6 $6     //$6 = ^x
+//Calculate final p2
+LSH   $5 #1     //$5 = 0000_00(b11^b10)0
+ADD   $6 $5     //$6 = 0000_00(b11^b10)(^x)
+RXOR  $6 $6     //$6 = 0000_000(p2)
+
+//Save p2 into reg7//
+LSH   $7 #1     //$7 = 0000_0(p8)(p4)0
+ADD   $6 $7     //$6 = 0000_0(p8)(p4)(p2)
+MOV   $7 $6     //$7 = 0000_0(p8)(p4)(p2)
+
+//Calculate P1//
+//Create upper_bits bitmask (0000_0101)
+AND   $2 $0     //$2 = 0000_0000
+ADDI  $2 #4     //$2 = 0000_0100
+ADDI  $2 #1     //$2 = 0000_0101
+LOAD  $4 #1     //$1 = upper_bits
+AND   $2 $1     //$2 = 0000_0(b11)0(b9)
+RXOR  $2 $5     //$5 = 0000_000(b11^b9)
+//Create lower_bits bitmask (0101_1011)
+AND   $6 $0     //$6 = 0000_0000
+ADDI  $6 #1     //$6 = 0000_0001
+LSH   $6 #3     //$6 = 0000_1000
+ADDI  $6 #3     //$6 = 0000_1011
+LSH   $6 #3     //$6 = 0101_1000
+ADDI  $6 #3     //$6 = 0101_1011
+LOAD  $4 #0     //$1 = lower_bits
+AND   $6 $1     //$6 = 0(b7)0(b5)_(b4)0(b2)(b1) = x
+RXOR  $6 $6     //$6 = 0000_000(^x)
+
+//Finalize p1 calculations//
+LSH   $6 #1     //$6 = 0000_00(^x)0
+ADD   $6 $5     //$6 = 0000_00(^x)(b11^b9)
+RXOR  $6 $6     //$6 = p1
+
+//Save p1 to reg7//
+LSH    $7 #1     //$7 = 0000_(p8)(p4)(p2)0
+ADD    $6 $7     //$6 = 0000_(p8)(p4)(p2)(p1)
+MOV    $7 $6     //$7 = 0000_(p8)(p4)(p2)(p1)
+
+//Calculate p0//
+RXOR   $6 $6     //$6 = 0000_000(p8^p4^p2^p1)
+RXOR   $1 $5     //$5 = 0000_000^(b8:b1)
+LOAD   $4 #1     //$1 = upper_bits
+RXOR   $1 $1     //$1 = 0000_000^(upper_bits)
+LSH    $6 #1     //$6 = 0000_00(p8^p4^p2^p1)0
+ADD    $6 $5     //$6 = 0000_00(p8^p4^p2^p1)(^b8:b1)
+LSH    $6 #1	 //$6 = 0000_0(p8^p4^p2^p1)(^b8:b1)0
+ADD    $6 $1	 //$6 = 0000_0(p8^p4^p2^p1)(^b8:b1)(^b11:b9)
+RXOR   $6 $6     //$6 = p0
+
+//Store p0 in reg7//
+LSH    $7 #1     //$7 = 000(p8)_(p4)(p2)(p1)0
+ADD    $6 $7     //$6 = 000(p8)_(p4)(p2)(p1)(p0)
+MOV    $7 $6
+
+//Calculate LSW//
+LOAD   $4 #0    //$1 = lower_bits
+RSH    $1 #1    //$1 = 0b8:b2
+LSH    $1 #4    //$1 = b5:b2_0000
+LSH    $1 #1    //$1 = b4:b20_0000
+LSH    $6 #4    //$6 = (p4)(p2)(p1)(p0)_0000
+RSH    $6 #3    //$6 = 000(p4)_(p2)(p1)(p0)0
+MOV    $7 $6    //$7 = 000(p4)_(p2)(p1)(p0)0
+RSH    $6 #4    //$6 = 0000_000(p4)
+LSH    $6 #4	//$6 = 000(p4)_0000
+ADD    $6 $1    //$6 = b4:b2(p4)_0000
+//Create bitmask for b1
+LOAD   $4 #0    //$1 = b8:b1
+AND    $2 $0    //$2 = 0
+ADDI   $2 #1    //$2 = 0000_0001
+AND    $1 $2    //$1 = 0000_000b1
+LSH    $1 #3    //$1 = 0000_(b1)000
+ADD    $6 $1    //$6 = b4:b2(p4)_(b1)000
+//Create bitmask for p2:p0
+RSH    $7 #1    //$7 = 0000_(p4)(p2)(p1)(p0)
+AND    $2 $0    //$2 = 0000_0000
+ADDI   $2 #3    //$2 = 0000_0011
+LSH    $2 #1    //$2 = 0000_0110
+ADDI   $2 #1    //$2 = 0000_0111
+AND    $7 $2    //$7 = 0000_0(p2)(p1)(p0)
+ADD    $6 $7    //$6 = LSW
+MOV    $1 $6    //$1 = 4:b2(p4)_b1(p2)(p1)(p0) 
+
+//Calculate j+30//
+AND   $2 $0    //$2 = 0                or x = 0
+ADDI  $2 #4    //$2 += 4               or x = 4   
+LSH   $2 #4    //$2 /= 4               or x = 32
+SUBI  $2 #2    //$2 -= 2               or x = 30
+MOV   $5 $4    //$5 = j
+ADD   $2 $5    //$2 = j + 30
+STORE $2 #0    //mem[j+30] = $1
+
+//Finish Loop//
+ADDI  $4 #2    //j+=2
+MOV   $2 $3    //$2 = i
+ADDI  $2 #1    //i++ 
+MOV   $3 $2    //$1 = i
+//Setup branch operation
+AND   $2 $0    //$2 = 0000_0000   (setup comparison to take the branch)
+ADDI  $2 #4    //$2 = 4
+LSH   $2 #2    //$2 = 16
+SUBI  $2 #2    //$2 = 14
+AND   $6 $0    //setup reg6 to contain destination
+ADDI  $6 #4    //$6 = 5
+ADDI  $6 #1    //Destination address is of PC 0x05
+MOV   $6 $7    //Move $6 to $7, and setup alternate destination if i == 14
+LSH   $6 #2    //$6 = 20 
+ADDI  $6 #4    //$6 = 24
+LSH   $6 #3    //$6 = 24/8 = 192
+EQ    $2 $3    //Branch to DONE if i == 14
+EQ    $0 $0
+JAL   $0 $6    
+JAL   $0 $7    //Else go to beginning of loop
+
+//NO-OP//
+/
+/
+/
+/
+/
+DONE:           //Raise done flag
