@@ -1,0 +1,24 @@
+100011000 //i = 0
+100100000 //j = 0
+010000101 //
+110001011 //$1 = 32 :store val	//should I store this in memory?
+010111101 //
+110110011 //$6 = 64 :store location
+000110001 //store 32 ($1) in mem[64] ($6)
+010011101 //$2 will contain PC of exit label
+010010001 //
+110010011 //
+010010001 //store 21 (PC of EXIT label)
+010000000 //loop:
+001011001 //If i = 32, execute next line (jump out of loop), else continue loop
+011110010 //$6 = 10  (whatever current PC is)
+100001111 //MOV 32 to $7 (for pattern_bits[32])
+000011000 //load mem[i] (curr_byte)
+000111000 //load pattern_bits[32]
+010000000 //ADD 			//curr_state
+010000000 //post-loop condition
+010010001 //i = i + 1
+010111101 //
+110110011 //$6 = 64
+000110000 //load mem[64] (value 32)
+010000000 //exit:		//end of loop
