@@ -30,14 +30,18 @@ registers = {
 }
 
 c_immediate = {
-	"#4":"011",
-	"#3":"010",
-	"#2":"001",
-	"#1":"000",
-	"#-1":"111",
-	"#-2":"110",
-	"#-3":"101",
-	"#-4":"100"
+    "RSH" : {
+        "#4":"011",
+        "#3":"010",
+        "#2":"001",
+        "#1":"000",
+        },
+    "LSH" : {
+        "#1":"111",
+        "#2":"110",
+        "#3":"101",
+        "#4":"100"
+    }
 }
 
 h_immediate = {
@@ -77,7 +81,8 @@ opcode = {
 	"JAL": "011",
 	"MOV": "100",
     "AND": "101",
-    "SH": "119",
+    "LSH": "110",
+    "RSH": "110",
     "RXOR": "111",
     "LOAD": "000",
     "STORE": "000",
@@ -87,12 +92,11 @@ opcode = {
 # classify instructions into different types
 # NOTE: THIS WILL BE DIFFERENT FOR YOU!
 htype = ['ADD', 'ADDI', 'SUB', 'SUBI', 'BXOR']
-ctype = ['EQ', 'JAL', 'MOV', 'AND', 'SH', 'RXOR']
+ctype = ['EQ', 'JAL', 'MOV', 'AND', 'LSH', 'RSH', 'RXOR']
 mtype = ['LOAD', 'STORE', 'NOT']
 
 # NOTE: THIS WILL BE DIFFERENT FOR YOU!
 comment_char = '//'
-immediate_char = '#'
 
 with (
     open(sys.argv[1], "r") as read,
@@ -111,7 +115,10 @@ with (
 
         # store instruction and comment
         inst = line[0].strip()
-        comment = line[1].strip()
+        if len(line) != 1:
+            comment = line[1].strip()
+        else:
+            comment = ''
 
         # split instruction into arguments
         inst = inst.split()
@@ -120,38 +127,39 @@ with (
         writeline = ''
 
         #empty lines are no-ops
-        if inst[0] == "":
+        print(inst)
+        if len(inst) == 0:
             writeline += noop
-
-        # write the opcode
-        if inst[0] in opcode:
-            writeline += opcode[inst[0]]
         else:
-            # if it an instruction that doesn't exist, exit
-            sys.exit()
-        
-        #break down instructions by bits
-        if inst[0] in htype:
-            #take first two bits 
-            writeline += registers[inst[1]][:2]
-            if (inst[2][0] == "$"):
-               writeline += registers[inst[2]][:2]   
+            # write the opcode
+            if inst[0] in opcode:
+                writeline += opcode[inst[0]]
             else:
-                writeline += h_immediate[inst[2]]
-            writeline += funct[inst[0]]
-        elif inst[0] in ctype:
-            writeline += registers[inst[1]]
-            if (inst[2][0] == "$"):
-                writeline += registers[inst[2]]
-            else:
-                writeline += c_immediate[inst[2]]
-        elif inst[0] in mtype: #M type instructions
-            writeline += registers[inst[1]]
-            writeline += m_immediate[inst[2]]
-            writeline += funct[inst[0]]
-            #append immediate 
-            #append function bits for m type
-			
+                # if it an instruction that doesn't exist, exit
+                sys.exit()
+            
+            #break down instructions by bits
+            if inst[0] in htype:
+                #take first two bits 
+                writeline += registers[inst[1]][:2]
+                if (inst[2][0] == "$"):
+                    writeline += registers[inst[2]][:2]   
+                else:
+                    writeline += h_immediate[inst[2]]
+                writeline += funct[inst[0]]
+            elif inst[0] in ctype:
+                writeline += registers[inst[1]]
+                if (inst[2][0] == "$"):
+                    writeline += registers[inst[2]]
+                else:
+                    writeline += c_immediate[inst[0]][inst[2]]
+            elif inst[0] in mtype: #M type instructions
+                writeline += registers[inst[1]]
+                writeline += m_immediate[inst[2]]
+                writeline += funct[inst[0]]
+                #append immediate 
+                #append function bits for m type
+                
         # SystemVerilog ignores comments prepended with // with readmemb or readmemh
         writeline += ' //' + comment
         writeline += '\n'
