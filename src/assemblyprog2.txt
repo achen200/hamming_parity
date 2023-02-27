@@ -1,0 +1,168 @@
+010000000 //BEGIN:
+101010000 //$2 = 0   or x = 0
+010011101 //$2 += 4   or x = 4
+110010100 //$2 *= 4   or x = 32
+010010111 //$2 -= 2   or x = 30
+010010100 //$2 = j + 30
+010000000 //Initialize upper_bits, lower_bits
+000010100 //$1 = data_mem[j+31]
+100101001 //$5 = $1   or $5 = upper_bits
+000010000 //$1 = data_mem[j+30]
+100111001 //$7 = lower_bits
+010000000 //Calculate p flags
+100000110 //$6 = ‘b00000000 (begin p8)
+010110111 //$6 = ‘b11111110
+111001101 //$1 = ^upper_bits or !p8err
+010110000 //$6 = {1111111, !p8err}
+110110111 //$6 << 1
+010101001 //$4 = ‘b11 (begin p4)
+110100110 //$4 = ‘b1100
+010101001 //$4 = ‘b1111
+110100100 //$4 = ‘b11110000
+100001100 //$1 = ‘b11110000 ///Starting here could maybe be simplified with something similar to a jump-link deal (maybe can use $2)
+101001101 //$1 = ‘b11110000 & upper_bits or upper_bits[b11:b8]
+101100111 //$4 = ‘b11110000 & lower_bits or lower_bits[b4:p4]
+000100011 //$4 = upper_bits[b11:b8]^lower_bits[b4:p4]
+111001100 //$1 = ^(upper_bits[b11:b8]^lower_bits[b4:p4]) or !p4err
+010110000 //$6 = {111111, !p8err, !p4err} ///jl ending here
+110110111 //$6 << 1
+100100000 //$4 = 0 (begin p2)
+010101001 //$4 = ‘b11
+110100110 //$4 = ‘b1100
+100001100 //$1 = ‘b1100
+100010100 //$2 = ‘b1100
+110100100 //$4 = ‘b11000000
+010100000 //$4 = ‘b11001100
+100001100 //$1 = $4 ///jl starting here
+101001101 //$1 = ‘b11001100 & upper_bits or upper_bits[b11:b10, b7:b6]
+101100111 //$4 = ‘b11001100 & lower_bits or lower_bits[b4:b3, b1:p2]
+000100011 //$4 = upper_bits[b11:b10, b7:b6]^lower_bits[b4:b3, b1:p2]
+111001100 //$1 = ^(upper_bits[b11:b10, b7:b6]^lower_bits[b4:b3, b1:p2]) or !p2err
+010110000 //$6 = {11111, !p8err, !p4err, !p2err} ///jl ending here
+110110111 //$6 << 1
+100100010 //$4 = $2 or ‘b1100 (begin p1)
+010100111 //$4 = ‘b1010
+100001100 //$1 = $4
+110100100 //$4 = ‘b10100000
+010100000 //$4 = ‘b10101010
+100001100 //$1 = $4 ///jl starting here
+101001101 //$1 = ‘b10101010 & upper_bits or upper_bits[b11, b9, b7, b5]
+101100111 //$4 = ‘b10101010 & lower_bits or lower_bits[b4, b2, b1, p1]
+000100011 //$4 = upper_bits[b11, b9, b7, b5]^lower_bits[b4, b2, b1, p1]
+111001100 //$1 = ^(upper_bits[b11, b9, b7, b5]^lower_bits[b4, b2, b1, p1]) or !p1err
+010110000 //$6 = {1111, !p8err, !p4err, !p2err, !p1err} ///jl ending here
+000110010 //$6 = {p8err, p4err, p2err, p1err}
+010000000 //Error Cases
+100001010 //
+110010001 //
+010010011 //
+110010101 //$2 = 112 (FINAL)
+010000000 //set whatever the error register ($1) will be to 0
+100001000 //$1 = 0
+001000110 //if no errors, skip next instruction
+001000000 //go to error calculations
+011000010 //if no errors, skip to storing result (maybe calculate and hold address in $2?)
+010000000 //ERROR2:
+111001101 //$1 = ^lower_bits
+111100111 //$4 = ^upper_bits
+000100011 //$4 = ^(upper_bits, lower_bits) or !p0err
+100001100 //$1 = ^(upper_bits, lower_bits) or !p0err
+100100000 //$4 = 0
+010100111 //$4 = ‘b11111110
+010100000 //$4 = {1111111, !p0err}
+000100010 //$4 = !$4 or p0err
+010000001 //$1 = {0000000,!p0err}+1
+010000000 //set whatever the error register will be to 2 ($1 is set to 2 previously)
+001000100 //if two errors, skip next instruction
+001000000 //if one error, begin to find and fix error
+011000010 //if two errors, skip to storing result
+010000000 //ERROR1:
+101100110 //$4 = p1err
+001100000 //
+110001111 //if p1err, m << 1
+100100000 //$4 = 0
+010100101 //$4 = b’00000010
+101100110 //$4 = p2err
+001100000 //
+110001110 //if p2err, m << 2
+100100000 //$4 = 0
+010101101 //$4 = b’00000100
+101100110 //$4 = p4err
+001100000 //
+110001100 //if p4err, m << 4
+100100001 //$4 = m
+100001110 //$1 = {p8err, p4err, p2err, p1err}
+110001010 //$1 = p8err
+010000000 //Calculate j+30
+101010000 //$2 = 0   or x = 0
+010011101 //$2 += 4   or x = 4
+110010100 //$2 *= 4   or x = 32
+010010111 //$2 -= 2   or x = 30
+010010100 //$2 = j + 30
+010010000 //$2 = j + 30 + p8err
+000010000 //if p8err, $1 = upper_bits; else $1 = lower_bits
+000100011 //$4 = fixed upper_bits or lower_bits (Flip Error)
+110110010 //$6 = p8err
+100001000 //
+010000001 //$1 = 1
+001110000 //if p8err, skip next instruction
+100111100 //$7 = fixed lower_bits
+001110001 //
+100101100 //$5 = fixed upper_bits
+010000000 //FINAL:
+110001100 //
+110001110 //$1 = {F2,F1,000000}
+100010000 //
+010011101 //
+010011001 //$2 = b’00000111
+100100010 //$4 = b’00000111
+110010100 //
+110010111 //
+101010101 //$2 = {upper_bits[b11:b9],00000}
+110010011 //
+110010000 //$2 = {00000, upper_bits[b11:b9]}
+010010000 //$2 = {F2, F1, 000, upper_bits[b11:b9]}
+100001010 //$1 = {F2, F1, 000, upper_bits[b11:b9]}
+000011101 //data_mem[j+1] = {F2, F1, 000, upper_bits[b11:b9]}
+110100110 //
+010100101 //$4 = b’00011110
+101101100 //$5 = {000,upper_bits[b8:b5], 0}
+110101101 //$5 = {upper_bits[b8:b5], 0000
+010100111 //
+110100101 //$4 = b’11100000
+101100111 //$4 = {lower_bits[b4:b2],00000}
+110100011 //
+010101000 //$4 = {upper_bits_[b8:b5], lower_bits[b4:b2],0}
+100110000 //
+010110001 //$6 = 1
+110110101 //$6 = ‘b00001000
+101111110 //$7 = {0000, lower_bits[b1], 000}
+110111010 //$7 = {0000000, lower_bits[b1}
+010101100 //$4 = {b8:b5, b4:b2, b1}
+100001100 //$1 = {b8:b5, b4:b2, b1}
+000011001 //data_mem[j] = {b8:b5, b4:b2, b1}
+101100000 //$4 = 0   or x = 0
+010101101 //$4 += 4   or x = 4
+110100100 //$4 *= 4   or x = 32
+010101111 //$4 -= 2   or x = 28
+100010100 //calc DONE
+100101100 //
+110010110 //
+110101111 //
+010011000 //$2 = 168 (DONE)
+001100011 //
+001000000 //
+011000010 //
+100010000 //
+010010101 //
+010010100 //
+100010011 //
+100110000 //
+010110001 //$6 = 1 (BEGIN)
+011000110 //
+010000000 //
+010000000 //
+010000000 //
+010000000 //
+010000000 //
+010000000 //DONE:
