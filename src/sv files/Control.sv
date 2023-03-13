@@ -5,7 +5,7 @@ module Control #(parameter opwidth = 3, mcodebits = 8)(
   output logic Branch, MemRead, MemWrite, Reg_Size, Func_Ex, Jump, ALUSrc, RegWrite,
   output logic[opwidth:0] ALUOp,	   // for up to 16 ALU operations
 
-  logic opcode = instr[9:6],
+  logic opcode = instr[8:5],
   logic funct  = instr[1:0]
 );
 always_comb begin
