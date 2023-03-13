@@ -17,9 +17,18 @@ module reg_file #(parameter pw=3)(
   assign datB_out = core[rd_addrB];
 
 // writes are sequential (clocked)
-  always_ff @(posedge clk)
-  if(wr_en)				 // anything but stores or no ops
-  core[wr_addr] <= dat_in; 
+  always_ff @(posedge clk) begin
+	
+	if(wr_en)begin
+		if(wr_addr != 0) begin
+			// anything but stores or no ops
+			core[wr_addr] <= dat_in;
+		end 
+	end
+	core[0] = 'b00000000
+  end
+  
+
 
 endmodule
 /*
