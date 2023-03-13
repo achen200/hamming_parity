@@ -78,7 +78,7 @@ module top_level(
   assign wr_addr = muxD;
   
 
-  reg_file #(.pw(3)) rf1(.dat_in(regfile_dat),	 // loads, most ops
+  reg_file #(.pw(3)) rf1(.dat_in(muxH),	 // loads, most ops
       .clk   ,
       .wr_en (RegWrite),
       .rd_addrA(rd_addrA),
