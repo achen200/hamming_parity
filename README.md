@@ -1,6 +1,6 @@
 # Custom Processor Design
 ## Custom ISA and Processor Specs:
-The goal to run the Hamming Parity bit algorithm to detect and correct corrupted bits. Our ISA uses an instruction width of 9 bits. Further
+The processor is designed to run the Hamming Parity bit algorithm to detect and correct corrupted bits. Our ISA uses an instruction width of 9 bits. Further
 documentation and diagrams can be found [here](https://docs.google.com/document/d/1FqtxIWGAnZTD27aaHzwTmiMNtMX_EEcOBYN-0US8_qk/edit#heading=h.n8befiq7h4m6)
 
 ## Programs:
@@ -17,3 +17,7 @@ Designed to run Hamming Parity Algorithm
     - definitions.sv - contains lookup table for ALUops
     - Rest of the file names match module functions
 - Machine code, assembly code, assembler, and warning messages located in src folder
+## Collaborators
+- [achen200](https://github.com/achen200/)
+- [alm011](https://github.com/alm011)
+- [KH-CL](https://github.com/KH-CL) 
